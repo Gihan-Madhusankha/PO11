@@ -150,9 +150,12 @@ public class ManageCustomersFormController {
                 }
 
                 CustomerDAOImpl customerDAO = new CustomerDAOImpl();
-                boolean b = customerDAO.saveCustomer(new CustomerDTO(id, name, address));
+                if (customerDAO.saveCustomer(new CustomerDTO(id, name, address))) {
+                    tblCustomers.getItems().add(new CustomerTM(id, name, address));
+                } else {
+                    new Alert(Alert.AlertType.WARNING, "Something went wrong...").show();
+                }
 
-                tblCustomers.getItems().add(new CustomerTM(id, name, address));
 
             } catch (SQLException e) {
                 new Alert(Alert.AlertType.ERROR, "Failed to save the customer " + e.getMessage()).show();
@@ -169,13 +172,7 @@ public class ManageCustomersFormController {
                 }
 
                 CustomerDAOImpl customerDAO = new CustomerDAOImpl();
-                boolean b = customerDAO.updateCustomer(new CustomerDTO(id, name, address));
-
-                if (b) {
-                    new Alert(Alert.AlertType.CONFIRMATION, "Updated").show();
-                } else {
-                    new Alert(Alert.AlertType.ERROR, "Something went wrong...").show();
-                }
+                customerDAO.updateCustomer(new CustomerDTO(id, name, address));
 
             } catch (SQLException e) {
                 new Alert(Alert.AlertType.ERROR, "Failed to update the customer " + id + e.getMessage()).show();
@@ -194,10 +191,8 @@ public class ManageCustomersFormController {
 
 
     boolean existCustomer(String id) throws SQLException, ClassNotFoundException {
-        Connection connection = DBConnection.getDbConnection().getConnection();
-        PreparedStatement pstm = connection.prepareStatement("SELECT id FROM Customer WHERE id=?");
-        pstm.setString(1, id);
-        return pstm.executeQuery().next();
+        CustomerDAOImpl customerDAO = new CustomerDAOImpl();
+        return customerDAO.existCustomer(id);
     }
 
 
