@@ -2,7 +2,7 @@ package controller;
 
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXTextField;
-import dao.ItemDAO;
+import dao.CrudDAO;
 import dao.ItemDAOImpl;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -31,7 +31,7 @@ import java.util.ArrayList;
  **/
 
 public class ManageItemsFormController {
-    private final ItemDAO itemDAO = new ItemDAOImpl();
+    private final CrudDAO<ItemDTO, String> crudDAO = new ItemDAOImpl();
     public AnchorPane root;
     public JFXTextField txtCode;
     public JFXTextField txtDescription;
@@ -76,7 +76,7 @@ public class ManageItemsFormController {
         tblItems.getItems().clear();
         try {
 
-            ArrayList<ItemDTO> allItems = itemDAO.getAllItems();
+            ArrayList<ItemDTO> allItems = crudDAO.getAll();
 
             for (ItemDTO rst : allItems) {
                 tblItems.getItems().add(new ItemTM(rst.getCode(), rst.getDescription(), rst.getUnitPrice(), rst.getQtyOnHand()));
@@ -138,7 +138,7 @@ public class ManageItemsFormController {
                 new Alert(Alert.AlertType.ERROR, "There is no such item associated with the id " + code).show();
             }
 
-            boolean b = itemDAO.deleteItem(code);
+            boolean b = crudDAO.delete(code);
 
             if (b) {
                 tblItems.getItems().remove(tblItems.getSelectionModel().getSelectedItem());
@@ -181,7 +181,7 @@ public class ManageItemsFormController {
                     new Alert(Alert.AlertType.ERROR, code + " already exists").show();
                 }
 
-                boolean b = itemDAO.saveItem(new ItemDTO(code, description, unitPrice, qtyOnHand));
+                boolean b = crudDAO.save(new ItemDTO(code, description, unitPrice, qtyOnHand));
                 if (b) {
                     tblItems.getItems().add(new ItemTM(code, description, unitPrice, qtyOnHand));
                 }
@@ -199,7 +199,7 @@ public class ManageItemsFormController {
                 }
                 /*Update Item*/
 
-                boolean b = itemDAO.updateItem(new ItemDTO(code, description, unitPrice, qtyOnHand));
+                boolean b = crudDAO.update(new ItemDTO(code, description, unitPrice, qtyOnHand));
                 if (b) {
                     ItemTM selectedItem = tblItems.getSelectionModel().getSelectedItem();
                     selectedItem.setDescription(description);
@@ -220,13 +220,13 @@ public class ManageItemsFormController {
 
 
     private boolean existItem(String code) throws SQLException, ClassNotFoundException {
-        return itemDAO.existsItem(code);
+        return crudDAO.exist(code);
     }
 
 
     private String generateNewId() {
         try {
-            return itemDAO.generateItemCode();
+            return crudDAO.generateNewID();
 
         } catch (SQLException e) {
             new Alert(Alert.AlertType.ERROR, e.getMessage()).show();
